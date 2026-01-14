@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>5.2099.v68c2f5e27299</version>
+    <version>5888.vd99c2b_38128d</version>
     <relativePath />
   </parent>
 
@@ -31,7 +31,7 @@
 
   <properties>
     <changelist>999999-SNAPSHOT</changelist>
-    <jenkins.baseline>2.516</jenkins.baseline>
+    <jenkins.baseline>2.528.3</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 
