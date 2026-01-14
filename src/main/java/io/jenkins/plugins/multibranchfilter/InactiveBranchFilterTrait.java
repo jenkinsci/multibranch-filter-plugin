@@ -1,5 +1,6 @@
 package io.jenkins.plugins.multibranchfilter;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.model.TaskListener;
 import java.io.IOException;
@@ -24,7 +25,6 @@ import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -69,7 +69,6 @@ public class InactiveBranchFilterTrait extends SCMSourceTrait {
         this.denylist = normalizeList(denylist);
     }
 
-
     @Override
     protected void decorateContext(SCMSourceContext<?, ?> context) {
         List<Pattern> allowlistPatterns = parsePatternList(getAllowlist());
@@ -78,8 +77,7 @@ public class InactiveBranchFilterTrait extends SCMSourceTrait {
 
         context.withFilter(new SCMHeadFilter() {
             @Override
-            public boolean isExcluded(SCMSourceRequest request, SCMHead head)
-                    throws IOException, InterruptedException {
+            public boolean isExcluded(SCMSourceRequest request, SCMHead head) throws IOException, InterruptedException {
                 TaskListener listener = request.listener();
                 String name = head.getName();
                 if (matchesAny(name, denylistPatterns)) {
@@ -116,16 +114,16 @@ public class InactiveBranchFilterTrait extends SCMSourceTrait {
                         logDecision(listener, name, false, "last-modified-unavailable");
                         return false;
                     }
-                    long cutoff = System.currentTimeMillis()
-                            - TimeUnit.DAYS.toMillis(inactivityDays);
+                    long cutoff = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(inactivityDays);
                     boolean excluded = lastModified < cutoff;
-                    logDecision(listener, name, excluded,
-                            "age-check lastModified=" + new Date(lastModified)
-                                    + " cutoff=" + new Date(cutoff));
+                    logDecision(
+                            listener,
+                            name,
+                            excluded,
+                            "age-check lastModified=" + new Date(lastModified) + " cutoff=" + new Date(cutoff));
                     return excluded;
                 } catch (UnsupportedOperationException e) {
-                    LOGGER.log(Level.FINE,
-                            "SCMFileSystem does not support lastModified for {0}", name);
+                    LOGGER.log(Level.FINE, "SCMFileSystem does not support lastModified for {0}", name);
                     logDecision(listener, name, false, "last-modified-unsupported");
                     return false;
                 }
@@ -155,8 +153,7 @@ public class InactiveBranchFilterTrait extends SCMSourceTrait {
                 try {
                     entries.add(Pattern.compile(name));
                 } catch (PatternSyntaxException e) {
-                    LOGGER.log(Level.WARNING,
-                            "Invalid regex in branch filter list: {0}", name);
+                    LOGGER.log(Level.WARNING, "Invalid regex in branch filter list: {0}", name);
                 }
             }
         }
@@ -173,9 +170,10 @@ public class InactiveBranchFilterTrait extends SCMSourceTrait {
     }
 
     private static void logDecision(TaskListener listener, String name, boolean excluded, String reason) {
-        listener.getLogger().println("InactiveBranchFilter: " + name
-                + " decision=" + (excluded ? "exclude" : "include")
-                + " reason=" + reason);
+        listener.getLogger()
+                .println("InactiveBranchFilter: " + name
+                        + " decision=" + (excluded ? "exclude" : "include")
+                        + " reason=" + reason);
     }
 
     private static SCMSource extractSource(SCMSourceRequest request) {
