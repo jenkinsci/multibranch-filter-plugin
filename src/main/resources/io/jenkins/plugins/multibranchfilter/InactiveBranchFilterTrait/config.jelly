@@ -1,0 +1,12 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+  <f:entry title="${%Inactive after (days)}" field="inactivityDays">
+    <f:textbox default="30"/>
+  </f:entry>
+  <f:entry title="${%Whitelist}" field="whitelist">
+    <f:textarea default="master&#10;main"/>
+  </f:entry>
+  <f:entry title="${%Blacklist}" field="blacklist">
+    <f:textarea default=""/>
+  </f:entry>
+</j:jelly>
