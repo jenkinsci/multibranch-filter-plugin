@@ -32,47 +32,48 @@ import org.kohsuke.stapler.DataBoundSetter;
 public class InactiveBranchFilterTrait extends SCMSourceTrait {
     private static final Logger LOGGER = Logger.getLogger(InactiveBranchFilterTrait.class.getName());
     private static final String SPLIT_REGEX = "[,\\r\\n]+";
-    private static final String DEFAULT_WHITELIST = "master\nmain";
+    private static final String DEFAULT_ALLOWLIST = "master\nmain";
     private static volatile boolean sourceFieldInitialized;
     private static volatile Field sourceField;
 
     private final int inactivityDays;
-    private String whitelist;
-    private String blacklist;
+    private String allowlist;
+    private String denylist;
 
     @DataBoundConstructor
     public InactiveBranchFilterTrait(int inactivityDays) {
         this.inactivityDays = Math.max(0, inactivityDays);
-        this.whitelist = DEFAULT_WHITELIST;
-        this.blacklist = "";
+        this.allowlist = DEFAULT_ALLOWLIST;
+        this.denylist = "";
     }
 
     public int getInactivityDays() {
         return inactivityDays;
     }
 
-    public String getWhitelist() {
-        return normalizeList(whitelist);
+    public String getAllowlist() {
+        return normalizeList(allowlist);
     }
 
-    public String getBlacklist() {
-        return normalizeList(blacklist);
-    }
-
-    @DataBoundSetter
-    public void setWhitelist(@Nullable String whitelist) {
-        this.whitelist = normalizeList(whitelist);
+    public String getDenylist() {
+        return normalizeList(denylist);
     }
 
     @DataBoundSetter
-    public void setBlacklist(@Nullable String blacklist) {
-        this.blacklist = normalizeList(blacklist);
+    public void setAllowlist(@Nullable String allowlist) {
+        this.allowlist = normalizeList(allowlist);
     }
+
+    @DataBoundSetter
+    public void setDenylist(@Nullable String denylist) {
+        this.denylist = normalizeList(denylist);
+    }
+
 
     @Override
     protected void decorateContext(SCMSourceContext<?, ?> context) {
-        List<Pattern> whitelistPatterns = parsePatternList(getWhitelist());
-        List<Pattern> blacklistPatterns = parsePatternList(getBlacklist());
+        List<Pattern> allowlistPatterns = parsePatternList(getAllowlist());
+        List<Pattern> denylistPatterns = parsePatternList(getDenylist());
         int inactivityDays = this.inactivityDays;
 
         context.withFilter(new SCMHeadFilter() {
@@ -81,12 +82,12 @@ public class InactiveBranchFilterTrait extends SCMSourceTrait {
                     throws IOException, InterruptedException {
                 TaskListener listener = request.listener();
                 String name = head.getName();
-                if (matchesAny(name, blacklistPatterns)) {
-                    logDecision(listener, name, true, "blacklist");
+                if (matchesAny(name, denylistPatterns)) {
+                    logDecision(listener, name, true, "deny-list");
                     return true;
                 }
-                if (matchesAny(name, whitelistPatterns)) {
-                    logDecision(listener, name, false, "whitelist");
+                if (matchesAny(name, allowlistPatterns)) {
+                    logDecision(listener, name, false, "allow-list");
                     return false;
                 }
                 if (head instanceof ChangeRequestSCMHead || head instanceof TagSCMHead) {

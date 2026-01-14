@@ -3,7 +3,7 @@
 ## Introduction
 
 Multibranch Filter Plugin adds a multibranch pipeline SCMSource trait that excludes branches which
-have been inactive for a configurable number of days. It supports a whitelist and blacklist (as
+have been inactive for a configurable number of days. It supports an allow list and deny list (as
 regular expressions) so you can always include or always exclude specific branches.
 
 Why I created this:
@@ -13,7 +13,7 @@ Why I created this:
 Key behaviors:
 - Inactivity is based on `SCMFileSystem.lastModified()` for the branch head.
   For Git, this corresponds to the commit timestamp of the HEAD revision.
-- Blacklist takes precedence over whitelist.
+- Deny list takes precedence over allow list.
 - Change requests and tags are always included.
 - If the SCM does not support `lastModified()`, the branch is kept.
 
@@ -26,12 +26,12 @@ Key behaviors:
 3. Configure the fields:
    - **Inactive after (days)**: number of days without activity before a branch is excluded.
      Set to `0` to disable inactivity filtering.
-   - **Whitelist**: newline- or comma-separated regular expressions to always include.
-   - **Blacklist**: newline- or comma-separated regular expressions to always exclude.
+   - **Allow list**: newline- or comma-separated regular expressions to always include.
+   - **Deny list**: newline- or comma-separated regular expressions to always exclude.
 
 Examples:
 
-Whitelist master and main (default):
+Allow list master and main (default):
 ```
 master
 main
@@ -50,8 +50,8 @@ multibranchPipelineJob('ConfigurationManager') {
       traits {
         inactiveBranchFilter {
           inactivityDays(10)
-          whitelist('master\nmain\n.*release.*')
-          blacklist('')
+          allowlist('master\nmain\n.*release.*')
+          denylist('')
         }
       }
     }
