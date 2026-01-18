@@ -26,8 +26,8 @@ Key behaviors:
 3. Configure the fields:
    - **Inactive after (days)**: number of days without activity before a branch is excluded.
      Set to `0` to disable inactivity filtering.
-   - **Allow list**: newline- or comma-separated regular expressions to always include.
-   - **Deny list**: newline- or comma-separated regular expressions to always exclude.
+   - **Allow list**: newline-separated regular expressions to always include.
+   - **Deny list**: newline-separated regular expressions to always exclude.
 
 Examples:
 

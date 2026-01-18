@@ -31,7 +31,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 public class InactiveBranchFilterTrait extends SCMSourceTrait {
     private static final Logger LOGGER = Logger.getLogger(InactiveBranchFilterTrait.class.getName());
-    private static final String SPLIT_REGEX = "[,\\r\\n]+";
+    private static final String SPLIT_REGEX = "[\\r\\n]+";
     private static final String DEFAULT_ALLOWLIST = "master\nmain";
     private static volatile boolean sourceFieldInitialized;
     private static volatile Field sourceField;
