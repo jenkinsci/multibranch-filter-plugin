@@ -13,8 +13,9 @@ Why I created this:
 
 Key behaviors:
 
-- Inactivity is based on `SCMFileSystem.lastModified()` for the branch head.
-  For Git, this corresponds to the commit timestamp of the HEAD revision.
+- Inactivity is based on the branch discovery probe's `lastModified()` value.
+  For Git, this is the commit timestamp of the HEAD revision and is read from the
+  scan-wide Git fetch rather than by creating a separate file-system checkout per branch.
 - Deny list takes precedence over allow list.
 - Change requests and tags are always included.
 - If the SCM does not support `lastModified()`, the branch is kept.
