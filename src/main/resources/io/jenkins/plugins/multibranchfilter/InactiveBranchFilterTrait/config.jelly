@@ -3,6 +3,9 @@
   <f:entry title="${%Inactive after (days)}" field="inactivityDays">
     <f:number default="30" min="0"/>
   </f:entry>
+  <f:entry title="${%Exclude tags older than (days)}" field="tagMaxAgeDays">
+    <f:number default="0" min="0"/>
+  </f:entry>
   <f:entry title="${%Allow list}" field="allowlist">
     <f:textarea default="master&#10;main"/>
   </f:entry>
