@@ -30,7 +30,7 @@ Key behaviors:
    - Job → Configure → Branch Sources → your SCM → Behaviors/Traits
    - Add **Filter inactive branches and old tags**
 3. Configure the fields:
-   - **Inactive after (days)**: number of days without activity before a branch is excluded.
+   - **Exclude branches older than (days)**: number of days without activity before a branch is excluded.
      Set to `0` to disable branch inactivity filtering.
    - **Exclude tags older than (days)**: age in days after which a tag is excluded.
      Set to `0` (default) to keep all tags. Tags must also be discovered by the branch source
