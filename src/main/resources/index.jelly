@@ -1,4 +1,4 @@
 <?jelly escape-by-default='true'?>
 <div>
-  Multibranch Filter Plugin adds a trait that can exclude inactive branches.
+  Multibranch Filter Plugin adds a trait that can exclude inactive branches and old tags.
 </div>

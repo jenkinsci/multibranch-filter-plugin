@@ -34,6 +34,7 @@ public class InactiveBranchFilterTrait extends SCMSourceTrait {
     private static final String DEFAULT_ALLOWLIST = "master\nmain";
 
     private final int inactivityDays;
+    private int tagMaxAgeDays;
     private String allowlist;
     private String denylist;
 
@@ -46,6 +47,15 @@ public class InactiveBranchFilterTrait extends SCMSourceTrait {
 
     public int getInactivityDays() {
         return inactivityDays;
+    }
+
+    public int getTagMaxAgeDays() {
+        return tagMaxAgeDays;
+    }
+
+    @DataBoundSetter
+    public void setTagMaxAgeDays(int tagMaxAgeDays) {
+        this.tagMaxAgeDays = Math.max(0, tagMaxAgeDays);
     }
 
     public String getAllowlist() {
@@ -71,7 +81,10 @@ public class InactiveBranchFilterTrait extends SCMSourceTrait {
         List<Pattern> allowlistPatterns = parsePatternList(getAllowlist());
         List<Pattern> denylistPatterns = parsePatternList(getDenylist());
         int inactivityDays = this.inactivityDays;
-        long cutoff = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(inactivityDays);
+        int tagMaxAgeDays = this.tagMaxAgeDays;
+        long now = System.currentTimeMillis();
+        long branchCutoff = now - TimeUnit.DAYS.toMillis(inactivityDays);
+        long tagCutoff = now - TimeUnit.DAYS.toMillis(tagMaxAgeDays);
         AgeExemption ageExemptHead = new AgeExemption();
 
         // Apply cheap name and head-type rules before the source creates a revision probe.
@@ -90,10 +103,32 @@ public class InactiveBranchFilterTrait extends SCMSourceTrait {
                     logDecision(listener, name, false, "allow-list");
                     return false;
                 }
-                if (head instanceof ChangeRequestSCMHead || head instanceof TagSCMHead) {
+                if (head instanceof ChangeRequestSCMHead) {
                     ageExemptHead.set(true);
-                    logDecision(listener, name, false, "change-request-or-tag");
+                    logDecision(listener, name, false, "change-request");
                     return false;
+                }
+                if (head instanceof TagSCMHead tag) {
+                    // Tags carry their own timestamp, so age them here instead of in the probe-based criteria.
+                    long timestamp = tag.getTimestamp();
+                    boolean excluded;
+                    String reason;
+                    if (tagMaxAgeDays <= 0) {
+                        excluded = false;
+                        reason = "tag-filter-disabled";
+                    } else if (timestamp <= 0L) {
+                        excluded = false;
+                        reason = "tag-timestamp-unavailable";
+                    } else {
+                        excluded = timestamp < tagCutoff;
+                        reason = "tag-age-check timestamp=" + new Date(timestamp) + " cutoff=" + new Date(tagCutoff);
+                    }
+                    if (!excluded) {
+                        // Kept tags must skip the branch age check in InactivityCriteria.
+                        ageExemptHead.set(true);
+                    }
+                    logDecision(listener, name, excluded, reason);
+                    return excluded;
                 }
                 if (inactivityDays <= 0) {
                     logDecision(listener, name, false, "inactive-filter-disabled");
@@ -105,7 +140,7 @@ public class InactiveBranchFilterTrait extends SCMSourceTrait {
 
         if (inactivityDays > 0) {
             // Reuse the source's probe, which Git creates from its single scan-wide fetch.
-            context.withCriteria(new InactivityCriteria(cutoff, ageExemptHead));
+            context.withCriteria(new InactivityCriteria(branchCutoff, ageExemptHead));
         }
     }
 
@@ -172,7 +207,7 @@ public class InactiveBranchFilterTrait extends SCMSourceTrait {
         @Override
         public boolean isHead(SCMSourceCriteria.Probe probe, TaskListener listener) throws IOException {
             String name = probe.name();
-            // Preserve allow-list and pull-request/tag inclusions while consuming the one-shot marker.
+            // Preserve allow-list, pull-request and tag decisions while consuming the one-shot marker.
             boolean ageExempt = Boolean.TRUE.equals(ageExemptHead.get());
             ageExemptHead.remove();
             if (ageExempt) {
@@ -204,7 +239,7 @@ public class InactiveBranchFilterTrait extends SCMSourceTrait {
     public static class DescriptorImpl extends SCMSourceTraitDescriptor {
         @Override
         public String getDisplayName() {
-            return "Filter inactive branches";
+            return "Filter inactive branches and old tags";
         }
     }
 }
